@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <title>SCOTLAND CLUB</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <meta property="og:title" content="">
+  <meta property="og:type" content="">
+  <meta property="og:url" content="">
+  <meta property="og:image" content="">
+
+  <meta name="theme-color" content="#005eb8">
+  
+  <style>
+  body,html{margin:0;padding:0}
+  .hidden{display:none;}
+  #field{width:512px;height:512px;background-image:url(/static/scotland.jpg);background-size:cover;background-repeat:no-repeat;overflow:hidden;cursor:crosshair;}
+  .peng{position:fixed;width:64px;pointer-events:none;}
+  .peng>.icon{width:64px;height:64px;background-image:url(/static/scottux.png);background-size:64px 64px;background-repeat:no-repeat;image-rendering:pixelated;}
+  .peng>.nick{display:inline-block;width:64px;text-align:center;word-break:break-all;background:white;}
+  .peng>.msg{display:none;min-width:64px;max-width:256px;text-align:center;word-break:break-all;position:absolute;background:rgba(255,255,255,0.5);margin-left:-64px;margin-top:-70px;}
+  </style>
+</head>
+
+<body>
+	<audio controls autoplay controlslist="nodownload" src="/static/epicjsfail.ogg" id="epicjsfail"></audio>
+	<audio loop src="/static/scotland.ogg" id="scotland"></audio>
+	<script defer>
+	document.getElementById("epicjsfail").remove();
+	</script>
+	
+	<div id="login">
+		entrer ur nickname:
+		<input type="text" id="nick" value="scot land" maxlength="32" /><br>
+		<input type="button" value="go" onclick="start()" />
+	</div>
+	
+	<div id="field_box" class="hidden">
+	<div id="field" onclick="moveme(event)">
+	</div>
+	<div>
+	<input type="text" id="mbox" value="hello worl" maxlength="128" />
+	<input type="button" value="say" onclick="say()" />
+	</div>
+	</div>
+	
+	<script src="/static/socket.io.min.js"></script>
+	<script>	
+	if (!String.prototype.format) {
+  String.prototype.format = function() {
+    var args = arguments;
+    return this.replace(/{(\d+)}/g, function(match, number) { 
+      return typeof args[number] != 'undefined'
+        ? args[number]
+        : match
+      ;
+    });
+  };
+}
+	
+	let sio = undefined;
+	
+	let field = document.getElementById('field');
+	
+	let peng = '<div class="peng" id="{0}"><div class="icon"></div><span class="nick">{1}</span><span class="msg" id="{2}"></span></div>';
+	
+	function start(){
+	let nickname = document.getElementById("nick").value;
+	console.log(nickname);
+	
+	document.getElementById("login").remove();
+	
+	sio = io({query:{nickname:nickname}, transports: ["websocket"]});
+	
+	sio.on("users", function (data) {
+	data.forEach(function(e){makepeng(e);});
+	});
+	sio.on("join", function (data) {makepeng(JSON.parse(data));});
+	sio.on("leave", function (data) {unmakepeng(data);});
+	sio.on("say", function (data) {saypeng(data);});
+	sio.on("move", function (data) {movepeng(data);});
+	
+	document.getElementById("field_box").classList.remove("hidden");
+	document.getElementById("scotland").play();
+	}
+	
+	function say(){
+	sio.emit('say', document.getElementById("mbox").value);
+	document.getElementById("mbox").value = '';
+	}
+	
+	function makepeng(data){
+	field.insertAdjacentHTML('beforeend', peng.format(data.id, data.nickname, 'm' + data.id));
+	movepeng(data);
+	}
+	
+	function unmakepeng(data){
+	let p = document.getElementById(data);
+	if (p)
+		p.remove();
+	}
+	
+	function saypeng(data){
+	let pm = document.getElementById('m' + data.id);
+	pm.innerHTML = data.msg;
+	pm.style.display = 'inline-block';
+	}
+	
+	function movepeng(data){
+	let p = document.getElementById(data.id);
+	p.style.left = '' + data.x * 64 + 'px';
+	p.style.top = '' + data.y * 64 + 'px';
+	}
+	
+	function moveme(event){
+	let coord = ((event.offsetX / 64) | 0)  + ";" + ((event.offsetY / 64) | 0);
+	sio.emit('move', coord);
+	}
+	</script>
+</body>
+
+</html>
