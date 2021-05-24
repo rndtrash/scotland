@@ -10,8 +10,7 @@ import random
 import html
 
 app = Flask(__name__, static_url_path='/static')
-sio = SocketIO(app)
-thread = None
+sio = SocketIO(app, async_mode='threading')
 
 users_dic = dict()
 
