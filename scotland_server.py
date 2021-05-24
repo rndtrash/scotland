@@ -25,7 +25,7 @@ def connect():
 	nickname = request.args.get('nickname')[:32]
 	if len(nickname) == 0:
 		nickname = 'scot land'
-	print('connect ', request.sid, nickname)
+	#print('connect ', request.sid, nickname)
 	users_dic[request.sid] = {'id': str(uuid.uuid4()), 'nickname': html.escape(nickname), 'x': random.randint(0, 7), 'y': random.randint(0, 7)}
 	sio.emit('users', [users_dic[i] for i in users_dic if i != request.sid], room=request.sid)
 	sio.emit('join', json.dumps(users_dic[request.sid]))
@@ -33,20 +33,20 @@ def connect():
 @sio.on('disconnect')
 def disconnect():
 	id = users_dic[request.sid]['id']
-	print('disconnect ', request.sid, id)
+	#print('disconnect ', request.sid, id)
 	del users_dic[request.sid]
 	sio.emit('leave', id)
 
 @sio.event
 def say(data):
 	msg = html.escape(str(data)[:128])
-	print(request.sid, msg)
+	#print(request.sid, msg)
 	if len(msg) != 0:
 		sio.emit('say', {'id': users_dic[request.sid]['id'], 'msg': msg})
 
 @sio.event
 def move(data):
-	print("move", request.sid, data)
+	#print("move", request.sid, data)
 	xy = data.split(";")
 	if len(xy) != 2:
 		return
