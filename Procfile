@@ -1,1 +1,1 @@
-web: gunicorn scotland_server:scotland_server
+web: gunicorn scotland_server:app
