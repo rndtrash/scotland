@@ -1,1 +1,1 @@
-web: python3 scotland_server.py
+web: gunicorn scotland_server:scotland_server
