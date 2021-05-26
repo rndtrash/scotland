@@ -26,7 +26,7 @@ def connect():
 	if len(nickname) == 0:
 		nickname = 'scot land'
 	#print('connect ', request.sid, nickname)
-	users_dic[request.sid] = {'id': str(uuid.uuid4()), 'nickname': html.escape(nickname), 'x': random.randint(0, 7), 'y': random.randint(0, 7)}
+	users_dic[request.sid] = {'id': str(uuid.uuid4()), 'nickname': nickname, 'x': random.randint(0, 7), 'y': random.randint(0, 7)}
 	sio.emit('users', [users_dic[i] for i in users_dic if i != request.sid], room=request.sid)
 	sio.emit('join', json.dumps(users_dic[request.sid]))
 
