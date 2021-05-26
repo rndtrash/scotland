@@ -22,7 +22,7 @@ def root():
 def connect():
 	if request.sid in users_dic:
 		return
-	nickname = request.args.get('nickname')[:32]
+	nickname = html.escape(request.args.get('nickname')[:32])
 	if len(nickname) == 0:
 		nickname = 'scot land'
 	#print('connect ', request.sid, nickname)
